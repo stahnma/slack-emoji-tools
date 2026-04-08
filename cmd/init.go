@@ -151,6 +151,8 @@ func runUpdateCookie(reader *bufio.Reader, cfg configData, configPath string) er
 }
 
 func promptWorkspace(reader *bufio.Reader, existing configData) (workspaceData, string, error) {
+	fmt.Println("The workspace name is the subdomain from your Slack URL: <name>.slack.com")
+	fmt.Println("Note: this may differ from your workspace's display name (e.g. \"My Company\" may be \"my-company-abc123\")")
 	name := prompt(reader, "Workspace name (e.g. mycompany): ")
 	name = strings.TrimSpace(name)
 	if name == "" {
