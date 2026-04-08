@@ -21,6 +21,7 @@ var grabCmd = &cobra.Command{
 
 func init() {
 	grabCmd.Flags().String("output", "", "output directory for downloaded emoji")
+	grabCmd.Flags().Bool("skip-aliases", true, "skip alias emoji")
 	rootCmd.AddCommand(grabCmd)
 }
 
@@ -58,9 +59,12 @@ func runGrab(cmd *cobra.Command, args []string) error {
 
 	fmt.Fprintf(cmd.OutOrStdout(), "Downloading emoji to %s\n", outputDir)
 
+	skipAliases, _ := cmd.Flags().GetBool("skip-aliases")
+
 	client := slack.New(ws.BotToken)
 	g := grabber.NewGrabber(client)
 	g.OutputDir = outputDir
+	g.SkipAliases = skipAliases
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()

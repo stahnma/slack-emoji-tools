@@ -20,17 +20,19 @@ type SlackClient interface {
 
 // Grabber holds configuration for downloading emojis.
 type Grabber struct {
-	Client     SlackClient
-	HTTPClient *http.Client
-	OutputDir  string
+	Client      SlackClient
+	HTTPClient  *http.Client
+	OutputDir   string
+	SkipAliases bool
 }
 
 // NewGrabber creates a Grabber with sensible defaults.
 func NewGrabber(client SlackClient) *Grabber {
 	return &Grabber{
-		Client:     client,
-		HTTPClient: &http.Client{Timeout: 30 * time.Second},
-		OutputDir:  "emojis",
+		Client:      client,
+		HTTPClient:  &http.Client{Timeout: 30 * time.Second},
+		OutputDir:   "emojis",
+		SkipAliases: true,
 	}
 }
 
@@ -50,7 +52,7 @@ func (g *Grabber) Run(ctx context.Context) error {
 			return ctx.Err()
 		}
 
-		if strings.HasPrefix(uri, "alias:") {
+		if g.SkipAliases && strings.HasPrefix(uri, "alias:") {
 			slog.Debug("skipping alias", "name", name)
 			continue
 		}
