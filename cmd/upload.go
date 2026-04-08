@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/slack-go/slack"
 	"github.com/spf13/cobra"
 	"github.com/stahnma/slack-emoji-tools/internal/config"
 	"github.com/stahnma/slack-emoji-tools/internal/state"
@@ -99,7 +103,33 @@ func runUpload(cmd *cobra.Command, args []string) error {
 	client := uploader.NewClient(token, cookie, team, flagDelay)
 	client.Verbose = verbose
 
-	var uploaded, skipped, conflicted int
+	// Set up dedup support: fetch emoji list on first conflict if bot_token is available.
+	botToken := ws.BotToken
+	var emojiMap map[string]string // lazily populated on first conflict
+	var emojiMapFetched bool
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+
+	fetchEmojiMap := func() map[string]string {
+		if emojiMapFetched {
+			return emojiMap
+		}
+		emojiMapFetched = true
+		if botToken == "" {
+			slog.Info("no bot_token configured; skipping SHA256 duplicate detection")
+			return nil
+		}
+		slog.Info("fetching emoji list for duplicate detection")
+		api := slack.New(botToken)
+		em, err := api.GetEmoji()
+		if err != nil {
+			slog.Warn("could not fetch emoji list for dedup", "error", err)
+			return nil
+		}
+		emojiMap = em
+		return emojiMap
+	}
+
+	var uploaded, skipped, conflicted, duplicates int
 
 	for _, entry := range entries {
 		if st.IsUploaded(entry.Path) {
@@ -146,6 +176,24 @@ func runUpload(cmd *cobra.Command, args []string) error {
 			}
 
 			if result.Error == "error_name_taken" {
+				// Check if the remote emoji is identical (SHA256 dedup).
+				if em := fetchEmojiMap(); em != nil {
+					if remoteURL, found := uploader.LookupEmojiURL(em, candidateName); found {
+						isDup, dedupErr := uploader.IsDuplicate(context.Background(), httpClient, remoteURL, imageData)
+						if dedupErr != nil {
+							slog.Warn("dedup check failed", "emoji", candidateName, "error", dedupErr)
+						} else if isDup {
+							fmt.Printf("duplicate (same image: %s)\n", candidateName)
+							st.RecordSuccess(entry.Path, candidateName)
+							if err := st.Save(); err != nil {
+								return fmt.Errorf("saving state: %w", err)
+							}
+							duplicates++
+							success = true
+							break
+						}
+					}
+				}
 				fmt.Printf("conflict (%s)\n", candidateName)
 				isConflict = true
 				if !flagAutoSuffix {
@@ -178,6 +226,6 @@ func runUpload(cmd *cobra.Command, args []string) error {
 		time.Sleep(client.Delay())
 	}
 
-	fmt.Printf("\nDone: %d uploaded, %d skipped, %d conflicts\n", uploaded, skipped, conflicted)
+	fmt.Printf("\nDone: %d uploaded, %d duplicates, %d skipped, %d conflicts\n", uploaded, duplicates, skipped, conflicted)
 	return nil
 }
