@@ -1,5 +1,7 @@
 # slack-emoji-tools
 
+[![CI](https://github.com/stahnma/slack-emoji-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/stahnma/slack-emoji-tools/actions/workflows/ci.yml)
+
 A CLI for managing custom Slack emoji. Download, list, and bulk-upload emoji across workspaces -- including free-tier Slack plans.
 
 ## Install
@@ -216,6 +218,10 @@ make lint       # Run vet + gofmt
 ```
 
 See [DEVELOPMENT.md](DEVELOPMENT.md) for project structure and architecture details.
+
+## Like this project?
+
+If you find `slack-emoji-tools` useful, give it a star on GitHub -- it helps others discover the project!
 
 ## License
 
