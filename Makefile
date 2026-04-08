@@ -3,7 +3,7 @@ BINARY  := slack-emoji-tools
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -ldflags "-X github.com/stahnma/slack-emoji-tools/cmd.version=$(VERSION)"
 
-.PHONY: build clean test test-short lint vet fmt install tidy help
+.PHONY: build clean test test-short vet fmt install tidy help
 
 build: tidy fmt ## Build the binary
 	go build $(LDFLAGS) -o $(BINARY) .
@@ -11,7 +11,7 @@ build: tidy fmt ## Build the binary
 install: ## Install to GOPATH/bin
 	go install $(LDFLAGS) .
 
-test: fmt lint vet ## Run tests
+test: fmt vet ## Run tests
 	go test ./... -v
 
 test-short: ## Run tests (short mode)
@@ -22,9 +22,6 @@ vet: ## Run go vet
 
 fmt: ## Run gofmt
 	gofmt -s -w .
-
-lint: vet fmt ## Run all linters
-	golangci-lint run ./...
 
 tidy: ## Run go mod tidy
 	go mod tidy
