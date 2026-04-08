@@ -34,11 +34,20 @@ func Execute() error {
 	return rootCmd.Execute()
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(version)
+	},
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file path")
 	rootCmd.PersistentFlags().StringVar(&workspace, "workspace", "", "workspace name (overrides default_workspace)")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "enable debug logging")
+	rootCmd.AddCommand(versionCmd)
 }
 
 func initConfig() {
