@@ -76,9 +76,9 @@ func runList(cmd *cobra.Command, args []string) error {
 	case "text":
 		for _, e := range entries {
 			if e.Alias != "" {
-				fmt.Fprintf(out, "%s → %s\n", e.Name, e.Alias)
+				_, _ = fmt.Fprintf(out, "%s → %s\n", e.Name, e.Alias)
 			} else {
-				fmt.Fprintln(out, e.Name)
+				_, _ = fmt.Fprintln(out, e.Name)
 			}
 		}
 	case "json":
@@ -89,9 +89,9 @@ func runList(cmd *cobra.Command, args []string) error {
 		}
 	case "csv":
 		w := csv.NewWriter(out)
-		w.Write([]string{"name", "alias"})
+		_ = w.Write([]string{"name", "alias"})
 		for _, e := range entries {
-			w.Write([]string{e.Name, e.Alias})
+			_ = w.Write([]string{e.Name, e.Alias})
 		}
 		w.Flush()
 		if err := w.Error(); err != nil {

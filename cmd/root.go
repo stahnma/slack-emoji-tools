@@ -68,9 +68,9 @@ func initConfig() {
 	}
 
 	viper.SetEnvPrefix("")
-	viper.BindEnv("slack_token", "SLACK_TOKEN")
-	viper.BindEnv("slack_cookie", "SLACK_COOKIE")
-	viper.BindEnv("slack_team", "SLACK_TEAM")
+	_ = viper.BindEnv("slack_token", "SLACK_TOKEN")
+	_ = viper.BindEnv("slack_cookie", "SLACK_COOKIE")
+	_ = viper.BindEnv("slack_team", "SLACK_TEAM")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {

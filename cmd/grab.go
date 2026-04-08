@@ -57,7 +57,7 @@ func runGrab(cmd *cobra.Command, args []string) error {
 		outputDir = filepath.Join(configDir, "slack-emoji-tools", "emojis", team)
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "Downloading emoji to %s\n", outputDir)
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Downloading emoji to %s\n", outputDir)
 
 	skipAliases, _ := cmd.Flags().GetBool("skip-aliases")
 
