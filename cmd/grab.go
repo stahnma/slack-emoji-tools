@@ -21,7 +21,6 @@ var grabCmd = &cobra.Command{
 
 func init() {
 	grabCmd.Flags().String("output", "", "output directory for downloaded emoji")
-	grabCmd.Flags().Bool("skip-aliases", true, "skip alias emoji")
 	rootCmd.AddCommand(grabCmd)
 }
 

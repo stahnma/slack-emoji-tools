@@ -106,13 +106,14 @@ func (c *Client) doUpload(name string, imageData []byte, filename string) (*Uplo
 	req.Header.Set("Referer", c.baseURL+"/customize/emoji")
 
 	if c.Verbose {
-		slog.Debug("uploading emoji",
-			"url", c.baseURL+"/api/emoji.add",
-			"token_prefix", c.token[:10],
-			"token_suffix", c.token[len(c.token)-6:],
-			"cookie_prefix", c.cookie[:10],
-			"cookie_suffix", c.cookie[len(c.cookie)-6:],
-		)
+		attrs := []any{"url", c.baseURL + "/api/emoji.add"}
+		if len(c.token) > 16 {
+			attrs = append(attrs, "token_prefix", c.token[:10], "token_suffix", c.token[len(c.token)-6:])
+		}
+		if len(c.cookie) > 16 {
+			attrs = append(attrs, "cookie_prefix", c.cookie[:10], "cookie_suffix", c.cookie[len(c.cookie)-6:])
+		}
+		slog.Debug("uploading emoji", attrs...)
 	}
 
 	resp, err := c.httpClient.Do(req)

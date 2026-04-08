@@ -54,15 +54,16 @@ func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
 	} else {
-		viper.SetConfigName("slack-emoji-tools")
+		// Search for config.yaml in XDG and current dir
+		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
 		if xdg, err := os.UserConfigDir(); err == nil {
 			viper.AddConfigPath(filepath.Join(xdg, "slack-emoji-tools"))
 		}
+		// Also search for dotfile in home directory
 		if home, err := os.UserHomeDir(); err == nil {
 			viper.AddConfigPath(home)
-			viper.SetConfigName(".slack-emoji-tools")
 		}
 	}
 

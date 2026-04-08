@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -87,9 +88,14 @@ func runList(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("encoding JSON: %w", err)
 		}
 	case "csv":
-		fmt.Fprintln(out, "name,alias")
+		w := csv.NewWriter(out)
+		w.Write([]string{"name", "alias"})
 		for _, e := range entries {
-			fmt.Fprintf(out, "%s,%s\n", e.Name, e.Alias)
+			w.Write([]string{e.Name, e.Alias})
+		}
+		w.Flush()
+		if err := w.Error(); err != nil {
+			return fmt.Errorf("writing CSV: %w", err)
 		}
 	default:
 		return fmt.Errorf("unknown format %q: use text, json, or csv", format)
