@@ -9,11 +9,6 @@ import (
 	"strings"
 )
 
-// EmojiLister abstracts fetching the emoji list from Slack (for testability).
-type EmojiLister interface {
-	GetEmoji() (map[string]string, error)
-}
-
 // IsDuplicate checks if localData has the same SHA256 as the remote emoji at
 // remoteURL. Returns true if they match (same image), false if they differ or
 // the remote image cannot be fetched.
@@ -37,7 +32,7 @@ func IsDuplicate(ctx context.Context, httpClient *http.Client, remoteURL string,
 		return false, fmt.Errorf("remote emoji returned status %d", resp.StatusCode)
 	}
 
-	remoteBody, err := io.ReadAll(resp.Body)
+	remoteBody, err := io.ReadAll(io.LimitReader(resp.Body, 10<<20))
 	if err != nil {
 		return false, fmt.Errorf("reading remote emoji body: %w", err)
 	}

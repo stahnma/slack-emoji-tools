@@ -3,31 +3,30 @@ package config
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/spf13/viper"
 )
 
 // WorkspaceConfig holds credentials and identity for a single Slack workspace.
 type WorkspaceConfig struct {
-	BotToken string `mapstructure:"bot_token"`
-	Cookie   string `mapstructure:"cookie"`
-	Team     string `mapstructure:"team"`
+	BotToken string `mapstructure:"bot_token" yaml:"bot_token,omitempty"`
+	Cookie   string `mapstructure:"cookie" yaml:"cookie,omitempty"`
+	Team     string `mapstructure:"team" yaml:"team,omitempty"`
 }
 
 // Defaults holds default values for CLI behaviour.
 type Defaults struct {
-	OutputDir   string        `mapstructure:"output_dir"`
-	UploadDelay time.Duration `mapstructure:"upload_delay"`
-	AutoSuffix  bool          `mapstructure:"auto_suffix"`
+	OutputDir   string `mapstructure:"output_dir" yaml:"output_dir,omitempty"`
+	UploadDelay string `mapstructure:"upload_delay" yaml:"upload_delay,omitempty"`
+	AutoSuffix  bool   `mapstructure:"auto_suffix" yaml:"auto_suffix,omitempty"`
 }
 
 // Config is the top-level configuration loaded from the config file and
 // environment variables via Viper.
 type Config struct {
-	DefaultWorkspace string                      `mapstructure:"default_workspace"`
-	Workspaces       map[string]WorkspaceConfig  `mapstructure:"workspaces"`
-	Defaults         Defaults                    `mapstructure:"defaults"`
+	DefaultWorkspace string                     `mapstructure:"default_workspace" yaml:"default_workspace"`
+	Workspaces       map[string]WorkspaceConfig `mapstructure:"workspaces" yaml:"workspaces"`
+	Defaults         Defaults                   `mapstructure:"defaults" yaml:"defaults"`
 }
 
 // Load reads the current Viper state into a typed Config struct.

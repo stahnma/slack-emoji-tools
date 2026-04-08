@@ -208,7 +208,7 @@ func runUpload(cmd *cobra.Command, args []string) error {
 			}
 
 			if result.Error == "not_authed" || result.Error == "invalid_auth" || result.Error == "token_revoked" {
-				return fmt.Errorf("authentication failed: %s — check your token and cookie", result.Error)
+				return fmt.Errorf("authentication failed: %s — try 'slack-emoji-tools init --update-cookie' to refresh your cookie", result.Error)
 			}
 
 			fmt.Printf("error: %s (will retry on next run)\n", result.Error)

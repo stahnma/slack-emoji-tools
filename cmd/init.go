@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/stahnma/slack-emoji-tools/internal/config"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,24 +26,9 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 }
 
-// configData mirrors the YAML config structure for marshalling.
-type configData struct {
-	DefaultWorkspace string                        `yaml:"default_workspace"`
-	Workspaces       map[string]workspaceData      `yaml:"workspaces"`
-	Defaults         defaultsData                  `yaml:"defaults"`
-}
-
-type workspaceData struct {
-	BotToken string `yaml:"bot_token,omitempty"`
-	Cookie   string `yaml:"cookie,omitempty"`
-	Team     string `yaml:"team,omitempty"`
-}
-
-type defaultsData struct {
-	OutputDir   string `yaml:"output_dir,omitempty"`
-	UploadDelay string `yaml:"upload_delay,omitempty"`
-	AutoSuffix  bool   `yaml:"auto_suffix,omitempty"`
-}
+// Type aliases for the shared config types used throughout init.
+type configData = config.Config
+type workspaceData = config.WorkspaceConfig
 
 func runInit(cmd *cobra.Command, args []string) error {
 	reader := bufio.NewReader(os.Stdin)
@@ -76,7 +63,7 @@ func runInit(cmd *cobra.Command, args []string) error {
 		}
 
 		if existing.Workspaces == nil {
-			existing.Workspaces = make(map[string]workspaceData)
+			existing.Workspaces = make(map[string]config.WorkspaceConfig)
 		}
 		existing.Workspaces[name] = ws
 
@@ -144,7 +131,12 @@ func runUpdateCookie(reader *bufio.Reader, cfg configData, configPath string) er
 	cookie := prompt(reader, "Browser cookie (xoxd-...): ")
 	cookie = strings.TrimSpace(cookie)
 
-	if cookie != "" && !strings.HasPrefix(cookie, "xoxd-") {
+	if cookie == "" {
+		fmt.Println("No cookie provided, keeping existing value.")
+		return nil
+	}
+
+	if !strings.HasPrefix(cookie, "xoxd-") {
 		fmt.Fprintln(os.Stderr, "Warning: cookie does not start with 'xoxd-' — saving anyway")
 	}
 
@@ -173,6 +165,7 @@ func promptWorkspace(reader *bufio.Reader, existing configData) (workspaceData, 
 	fmt.Println()
 	fmt.Println("── Grab/List credentials (optional) ──")
 	fmt.Println("These use a Slack Bot Token with emoji:read scope.")
+	fmt.Println("Need help? See docs/slack-bot-token.md or https://api.slack.com/apps")
 	botToken := prompt(reader, "Bot token (xoxb-...): ")
 	botToken = strings.TrimSpace(botToken)
 
@@ -218,7 +211,10 @@ func promptWorkspace(reader *bufio.Reader, existing configData) (workspaceData, 
 
 func prompt(reader *bufio.Reader, message string) string {
 	fmt.Print(message)
-	line, _ := reader.ReadString('\n')
+	line, err := reader.ReadString('\n')
+	if err != nil && line == "" {
+		return ""
+	}
 	return strings.TrimRight(line, "\n\r")
 }
 
@@ -274,5 +270,6 @@ func workspaceNames(cfg configData) []string {
 	for name := range cfg.Workspaces {
 		names = append(names, name)
 	}
+	sort.Strings(names)
 	return names
 }
