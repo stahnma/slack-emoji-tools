@@ -1,0 +1,26 @@
+version: 2
+
+# Flox packages (.flox/env/manifest.lock) aren't supported by Dependabot; the
+# Flox Upgrade workflow covers those.
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      go-dependencies:
+        patterns: ['*']
+    commit-message:
+      prefix: chore(deps)
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      github-actions:
+        patterns: ['*']
+    commit-message:
+      prefix: chore(ci)
