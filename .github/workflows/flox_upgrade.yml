@@ -1,0 +1,19 @@
+name: Flox Upgrade
+
+# Dependabot doesn't understand .flox/env/manifest.toml, so once a week run
+# `flox upgrade` and open a PR if the lockfile changed.
+on:
+  schedule:
+    - cron: '0 14 * * 1'  # Mondays 14:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  upgrade:
+    uses: stahnma/flox-upgrade-workflow/.github/workflows/flox-upgrade.yml@v1
+    with:
+      test-command: make build test
+    secrets: inherit
